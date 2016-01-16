@@ -31,34 +31,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
-import android.graphics.Color;
-
-
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.IrSeekerSensor;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 
 /**
  * Driver Mode
  */
-public class K9TeleOp extends OpMode {
+public class ravidIsStupid extends OpMode {
 
 	//Motors
 	DcMotor motorRight;
 	DcMotor motorLeft;
-
-	DcMotor tiltArm;
-	DcMotor rackBottom;
-	DcMotor rackTop;
-
-	boolean rbpressed = false;
-	boolean lbpressed = false;
-	boolean trcheck = false;
+	DcMotor motorRight2;
+	DcMotor motorLeft2;
+	DcMotor jackisidiota;
 	/*DcMotor linearSlide;
 
 	Servo flipServo;
@@ -76,9 +64,10 @@ public class K9TeleOp extends OpMode {
 	boolean xpressed = false; */
 
 	//servo
+	Servo hammer;
 	double hammerPosition = 0;
 
-	public K9TeleOp() {
+	public ravidIsStupid() {
 
 	}
 
@@ -88,10 +77,13 @@ public class K9TeleOp extends OpMode {
 		motorLeft = hardwareMap.dcMotor.get("motor_1");
 		motorRight.setDirection(DcMotor.Direction.REVERSE); //Mirror right motor
 
-		tiltArm = hardwareMap.dcMotor.get("tiltArm");
-		rackBottom = hardwareMap.dcMotor.get("rackBottom");
-		rackTop = hardwareMap.dcMotor.get("rackTop");
+		motorRight2 = hardwareMap.dcMotor.get("motorRight2");
+		motorLeft2 = hardwareMap.dcMotor.get("motorLeft2");
+		motorLeft2.setDirection(DcMotor.Direction.REVERSE);
+		hammer=hardwareMap.servo.get("hammer");
 
+
+		jackisidiota = hardwareMap.dcMotor.get("curry_spice_powder");
 
 		/*linearSlide = hardwareMap.dcMotor.get("linearSlide");
 		flipServo = hardwareMap.servo.get("flipServo");
@@ -107,48 +99,14 @@ public class K9TeleOp extends OpMode {
 		//left_joystick_movement();
 		dual_joystick_movement();
 
-		//Linear slide control, left and right bumpers
-		float trPower = .2f;
-
-		if(gamepad2.right_bumper) {
-			if(!rbpressed) {
-				if (trcheck) {
-					tiltArm.setPower(0);
-					trcheck = false;
-				} else {
-					tiltArm.setPower(trPower);
-					trcheck = true;
-				}
-				rbpressed = false;
-			}
-			rbpressed = true;
-			lbpressed = false;
-		} else if(gamepad2.left_bumper) {
-			if(!lbpressed) {
-				if (trcheck) {
-					tiltArm.setPower(0);
-					trcheck = false;
-				} else {
-					tiltArm.setPower(-trPower);
-					trcheck = true;
-				}
-				lbpressed = false;
-			}
-			rbpressed = false;
-			lbpressed = true;
-		} else {
-			rbpressed = false;
-			lbpressed = false;
-		}
-
-		/*if(gamepad1.right_bumper){
+		if(gamepad1.right_bumper){
 			hammerPosition += .1;
 		}
 		if(gamepad1.left_bumper){
 			hammerPosition -= .1;
 		}
 		hammerPosition = Range.clip(hammerPosition, 0, 1);
-		hammer.setPosition(hammerPosition);*/
+		hammer.setPosition(hammerPosition);
 		/*
 
 		//Linear slide control, left and right bumpers
@@ -251,7 +209,9 @@ public class K9TeleOp extends OpMode {
 		left =  (float)scaleInput(left);
 
 		motorRight.setPower(right);
+		motorRight2.setPower(right);
 		motorLeft.setPower(left);
+		motorLeft2.setPower(left);
 	}
 
 	//Dual joystick movement
@@ -268,7 +228,9 @@ public class K9TeleOp extends OpMode {
 		left =  (float)scaleInput(left);
 
 		motorRight.setPower(right);
+		motorRight2.setPower(right);
 		motorLeft.setPower(left);
+		motorLeft2.setPower(left);
 	}
 
 	@Override

@@ -2,9 +2,12 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
 
 //------------------------------------------------------------------------------
@@ -70,6 +73,8 @@ public class PushBotHardware extends OpMode
         //
         // The variable below is used to provide telemetry data to a class user.
         //
+
+
         v_warning_generated = false;
         v_warning_message = "Can't map; ";
 
@@ -81,7 +86,7 @@ public class PushBotHardware extends OpMode
         //
         try
         {
-            v_motor_left_drive = hardwareMap.dcMotor.get ("left_drive");
+            v_motor_left_drive = hardwareMap.dcMotor.get ("motor_1");
         }
         catch (Exception p_exeception)
         {
@@ -93,7 +98,7 @@ public class PushBotHardware extends OpMode
 
         try
         {
-            v_motor_right_drive = hardwareMap.dcMotor.get ("right_drive");
+            v_motor_right_drive = hardwareMap.dcMotor.get ("motor_2");
             v_motor_right_drive.setDirection (DcMotor.Direction.REVERSE);
         }
         catch (Exception p_exeception)
@@ -103,55 +108,14 @@ public class PushBotHardware extends OpMode
 
             v_motor_right_drive = null;
         }
+        cSensor = hardwareMap.colorSensor.get("colorSensor");
+        cSensor.enableLed(false);
+        odSensor = hardwareMap.opticalDistanceSensor.get("ods");
+        tSensor = hardwareMap.touchSensor.get("touchSensor");
 
-        //
-        // Connect the arm motor.
-        //
-        try
-        {
-            v_motor_left_arm = hardwareMap.dcMotor.get ("left_arm");
-        }
-        catch (Exception p_exeception)
-        {
-            m_warning_message ("left_arm");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
+        leftPusher = hardwareMap.servo.get("leftServo");
+        rightPusher = hardwareMap.servo.get("rightServo");
 
-            v_motor_left_arm = null;
-        }
-
-        //
-        // Connect the servo motors.
-        //
-        // Indicate the initial position of both the left and right servos.  The
-        // hand should be halfway opened/closed.
-        //
-        double l_hand_position = 0.5;
-
-        try
-        {
-            v_servo_left_hand = hardwareMap.servo.get ("left_hand");
-            v_servo_left_hand.setPosition (l_hand_position);
-        }
-        catch (Exception p_exeception)
-        {
-            m_warning_message ("left_hand");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-
-            v_servo_left_hand = null;
-        }
-
-        try
-        {
-            v_servo_right_hand = hardwareMap.servo.get ("right_hand");
-            v_servo_right_hand.setPosition (l_hand_position);
-        }
-        catch (Exception p_exeception)
-        {
-            m_warning_message ("right_hand");
-            DbgLog.msg (p_exeception.getLocalizedMessage ());
-
-            v_servo_right_hand = null;
-        }
 
     } // init
 
@@ -377,6 +341,22 @@ public class PushBotHardware extends OpMode
         }
 
     } // set_drive_power
+
+    void set_left_drive_power(double p_left_power)
+    {
+        if (v_motor_left_drive != null)
+        {
+            v_motor_left_drive.setPower (p_left_power);
+        }
+    }
+
+    void set_right_drive_power(double p_right_power)
+    {
+        if (v_motor_right_drive != null)
+        {
+            v_motor_right_drive.setPower (p_right_power);
+        }
+    }
 
     //--------------------------------------------------------------------------
     //
@@ -1042,5 +1022,37 @@ public class PushBotHardware extends OpMode
      * Manage the aspects of the right hand servo.
      */
     private Servo v_servo_right_hand;
+
+
+    //SENSOR STUFF
+    private OpticalDistanceSensor odSensor;
+    private ColorSensor cSensor;
+    private TouchSensor tSensor;
+
+    boolean touch_button_pressed() {
+        return tSensor.isPressed();
+    }
+
+    boolean color_is_red() {
+        return (cSensor.red() > cSensor.blue());
+    }
+
+    boolean color_is_blue() {
+        return (cSensor.blue() > cSensor.red());
+    }
+
+    //Servo Stuff
+    private Servo leftPusher;
+    private Servo rightPusher;
+
+    void engage_left() {
+        leftPusher.setPosition(0);
+        rightPusher.setPosition(0);
+    }
+
+    void engage_right() {
+        rightPusher.setPosition(.9);
+        leftPusher.setPosition(1);
+    }
 
 } // PushBotHardware
