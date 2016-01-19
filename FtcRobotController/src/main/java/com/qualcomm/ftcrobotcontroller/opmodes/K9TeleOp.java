@@ -49,31 +49,21 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 public class K9TeleOp extends OpMode {
 
 	//Motors
-	DcMotor motorRight;
-	DcMotor motorLeft;
+	//DcMotor motorRight;
+	//DcMotor motorLeft;
 
 	DcMotor tiltArm;
 	DcMotor rackBottom;
+	DcMotor rackMid;
 	DcMotor rackTop;
 
 	boolean rbpressed = false;
 	boolean lbpressed = false;
 	boolean trcheck = false;
-	/*DcMotor linearSlide;
 
-	Servo flipServo;
-	Servo swipeServo;
-	Servo wipeServo;
-
-	boolean lscheck = false; //checks if linearslide is in motion, false because it is not in motion
-	boolean rbpressed = false;
-	boolean lbpressed = false;
-	boolean bpressed = false;
-	boolean fpcheck = false;
-	boolean swcheck = false;
-	int swcount = 0;
-	boolean apressed = false;
-	boolean xpressed = false; */
+	boolean rtpressed = false;
+	boolean ltpressed = false;
+	boolean renabled = false;
 
 	//servo
 	double hammerPosition = 0;
@@ -84,33 +74,28 @@ public class K9TeleOp extends OpMode {
 
 	@Override
 	public void init() {
-		motorRight = hardwareMap.dcMotor.get("motor_2");
-		motorLeft = hardwareMap.dcMotor.get("motor_1");
-		motorRight.setDirection(DcMotor.Direction.REVERSE); //Mirror right motor
+		//motorRight = hardwareMap.dcMotor.get("motor_2");
+		//motorLeft = hardwareMap.dcMotor.get("motor_1");
+		//motorRight.setDirection(DcMotor.Direction.REVERSE); //Mirror right motor
 
 		tiltArm = hardwareMap.dcMotor.get("tiltArm");
+
 		rackBottom = hardwareMap.dcMotor.get("rackBottom");
+		rackMid = hardwareMap.dcMotor.get("rackMid");
+		rackMid.setDirection(DcMotor.Direction.REVERSE);
 		rackTop = hardwareMap.dcMotor.get("rackTop");
-
-
-		/*linearSlide = hardwareMap.dcMotor.get("linearSlide");
-		flipServo = hardwareMap.servo.get("flipServo");
-		flipServo.setDirection(Servo.Direction.FORWARD);
-		swipeServo = hardwareMap.servo.get("swipeServo");
-		wipeServo = hardwareMap.servo.get("wipeServo"); */
 
 	}
 
 	@Override
 	public void loop() {
 
-		//left_joystick_movement();
-		dual_joystick_movement();
+		//dual_joystick_movement();
 
-		//Linear slide control, left and right bumpers
+		//Tilt control, left and right bumpers for gamepad 2
 		float trPower = .2f;
 
-		if(gamepad2.right_bumper) {
+		if(gamepad1.right_bumper) {
 			if(!rbpressed) {
 				if (trcheck) {
 					tiltArm.setPower(0);
@@ -123,7 +108,7 @@ public class K9TeleOp extends OpMode {
 			}
 			rbpressed = true;
 			lbpressed = false;
-		} else if(gamepad2.left_bumper) {
+		} else if(gamepad1.left_bumper) {
 			if(!lbpressed) {
 				if (trcheck) {
 					tiltArm.setPower(0);
@@ -141,104 +126,57 @@ public class K9TeleOp extends OpMode {
 			lbpressed = false;
 		}
 
-		/*if(gamepad1.right_bumper){
-			hammerPosition += .1;
-		}
-		if(gamepad1.left_bumper){
-			hammerPosition -= .1;
-		}
-		hammerPosition = Range.clip(hammerPosition, 0, 1);
-		hammer.setPosition(hammerPosition);*/
-		/*
 
-		//Linear slide control, left and right bumpers
-		float lsPower = .2f;
 
-		if(gamepad1.right_bumper) {
-			if(!rbpressed) {
-				if (lscheck) {
-					linearSlide.setPower(0);
-					lscheck = false;
+		//Rack control, right and left bumpers on gamepad 2
+		float rPower = .3f;
+
+		if(gamepad1.right_trigger > 0.2) {
+			if(!rtpressed) {
+				if (renabled) {
+					setRackPower(0);
+					renabled = false;
 				} else {
-					linearSlide.setPower(lsPower);
-					lscheck = true;
+					setRackPower(rPower); //Forwards direction
+					rackBottom.setPower(rPower + .2f);
+					renabled = true;
 				}
-				rbpressed = false;
+				rtpressed = false;
 			}
-			rbpressed = true;
-			lbpressed = false;
-		} else if(gamepad1.left_bumper) {
-			if(!lbpressed) {
-				if (lscheck) {
-					linearSlide.setPower(0);
-					lscheck = false;
+			rtpressed = true;
+			ltpressed = false;
+		} else if(gamepad1.left_trigger > 0.2) {
+			if(!ltpressed) {
+				if (renabled) {
+					setRackPower(0);
+					renabled = false;
 				} else {
-					linearSlide.setPower(-lsPower);
-					lscheck = true;
+					setRackPower(-.5f); //Reverse direction
+					renabled = true;
 				}
-				lbpressed = false;
+				ltpressed = false;
 			}
-			rbpressed = false;
-			lbpressed = true;
+			rtpressed = false;
+			ltpressed = true;
 		} else {
-			rbpressed = false;
-			lbpressed = false;
+			rtpressed = false;
+			ltpressed = false;
 		}
-
-		if(gamepad1.a) {
-			if(!apressed) {
-				if(fpcheck) {
-					flipServo.setPosition(.5);
-					fpcheck = false;
-				} else {
-					//flipServo.setPosition(0);
-					fpcheck = true;
-				}
-			}
-			apressed = true;
-		} else {
-			apressed = false;
-		}
-
-		if(gamepad1.b) {
-			if(!bpressed) {
-				swcheck = true;
-			} else {
-				swcheck = false;
-			}
-			bpressed = true;
-		} else {
-			bpressed = false;
-		}
-
-		if(gamepad1.x) {
-			if(!xpressed) {
-				wipeServo.setPosition(1);
-			} else {
-				wipeServo.setPosition(0);
-			}
-			xpressed = true;
-		} else {
-			xpressed = false;
-		}
-
-		//swipe
-		if(swcheck) {
-			if(swcount % 8 == 0) {
-				swipeServo.setPosition(0);
-			} else {
-				swipeServo.setPosition(1);
-			}
-			++swcount;
-		} */
 
 		//Debug data
         telemetry.addData("Text", "*** Robot Data***");
 
 	}
 
+	private void setRackPower(float power) {
+		rackBottom.setPower(power);
+		rackMid.setPower(power);
+		rackTop.setPower(power);
+	}
+
+
 	//Control movement with only left joystick
-	private void left_joystick_movement() {
+	/*private void left_joystick_movement() {
 		float right = gamepad1.left_stick_y - gamepad1.left_stick_x;
 		float left = gamepad1.left_stick_y +  gamepad1.left_stick_x;
 
@@ -269,7 +207,7 @@ public class K9TeleOp extends OpMode {
 
 		motorRight.setPower(right);
 		motorLeft.setPower(left);
-	}
+	}*/
 
 	@Override
 	public void stop() {
