@@ -49,8 +49,8 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 public class K9TeleOp extends OpMode {
 
 	//Motors
-	//DcMotor motorRight;
-	//DcMotor motorLeft;
+	DcMotor motorRight;
+	DcMotor motorLeft;
 
 	DcMotor tiltArm;
 	DcMotor rackBottom;
@@ -74,9 +74,9 @@ public class K9TeleOp extends OpMode {
 
 	@Override
 	public void init() {
-		//motorRight = hardwareMap.dcMotor.get("motor_2");
-		//motorLeft = hardwareMap.dcMotor.get("motor_1");
-		//motorRight.setDirection(DcMotor.Direction.REVERSE); //Mirror right motor
+		motorRight = hardwareMap.dcMotor.get("motorRight");
+		motorLeft = hardwareMap.dcMotor.get("motorLeft");
+		motorRight.setDirection(DcMotor.Direction.REVERSE); //Mirror right motor
 
 		tiltArm = hardwareMap.dcMotor.get("tiltArm");
 
@@ -90,31 +90,31 @@ public class K9TeleOp extends OpMode {
 	@Override
 	public void loop() {
 
-		//dual_joystick_movement();
+		left_joystick_movement();
 
 		//Tilt control, left and right bumpers for gamepad 2
-		float trPower = .2f;
+		float trPower = .5f;
 
-		if(gamepad1.right_bumper) {
+		if(gamepad2.right_bumper) {
 			if(!rbpressed) {
 				if (trcheck) {
 					tiltArm.setPower(0);
 					trcheck = false;
 				} else {
-					tiltArm.setPower(trPower);
+					tiltArm.setPower(.5f);
 					trcheck = true;
 				}
 				rbpressed = false;
 			}
 			rbpressed = true;
 			lbpressed = false;
-		} else if(gamepad1.left_bumper) {
+		} else if(gamepad2.left_bumper) {
 			if(!lbpressed) {
 				if (trcheck) {
 					tiltArm.setPower(0);
 					trcheck = false;
 				} else {
-					tiltArm.setPower(-trPower);
+					tiltArm.setPower(-.2f);
 					trcheck = true;
 				}
 				lbpressed = false;
@@ -130,41 +130,22 @@ public class K9TeleOp extends OpMode {
 
 		//Rack control, right and left bumpers on gamepad 2
 		float rPower = .3f;
+		float boffset = .2f;
 
-		if(gamepad1.right_trigger > 0.2) {
-			if(!rtpressed) {
-				if (renabled) {
-					setRackPower(0);
-					renabled = false;
-				} else {
-					setRackPower(rPower); //Forwards direction
-					rackBottom.setPower(rPower + .2f);
-					renabled = true;
-				}
-				rtpressed = false;
-			}
-			rtpressed = true;
-			ltpressed = false;
-		} else if(gamepad1.left_trigger > 0.2) {
-			if(!ltpressed) {
-				if (renabled) {
-					setRackPower(0);
-					renabled = false;
-				} else {
-					setRackPower(-.5f); //Reverse direction
-					renabled = true;
-				}
-				ltpressed = false;
-			}
-			rtpressed = false;
-			ltpressed = true;
+
+		if(gamepad2.right_trigger > 0) {
+			setRackPower(gamepad2.right_trigger); //Forwards direction
+			float bpow = gamepad2.right_trigger + boffset;
+			rackBottom.setPower(bpow > 1.0f ? 1.0f : bpow);
+		} else if(gamepad2.left_trigger > 0) {
+			setRackPower(-gamepad2.left_trigger); //Reverse direction
 		} else {
-			rtpressed = false;
-			ltpressed = false;
+			setRackPower(0f);
 		}
 
 		//Debug data
         telemetry.addData("Text", "*** Robot Data***");
+		telemetry.addData("RT", "" + gamepad1.right_trigger);
 
 	}
 
@@ -176,7 +157,7 @@ public class K9TeleOp extends OpMode {
 
 
 	//Control movement with only left joystick
-	/*private void left_joystick_movement() {
+	private void left_joystick_movement() {
 		float right = gamepad1.left_stick_y - gamepad1.left_stick_x;
 		float left = gamepad1.left_stick_y +  gamepad1.left_stick_x;
 
@@ -203,29 +184,29 @@ public class K9TeleOp extends OpMode {
 
 		//Scale inputs
 		right = (float)scaleInput(right);
-		left =  (float)scaleInput(left);
+		left = (float)scaleInput(left);
 
 		motorRight.setPower(right);
 		motorLeft.setPower(left);
-	}*/
+	}
 
 	@Override
 	public void stop() {
 
 	}
-    	
+
 	/*
-	 * This method scales the joystick input so for low joystick values, the 
+	 * This method scales the joystick input so for low joystick values, the
 	 * scaled value is less than linear.  This is to make it easier to drive
 	 * the robot more precisely at slower speeds.
 	 */
 	double scaleInput(double dVal)  {
 		double[] scaleArray = { 0.0, 0.05, 0.09, 0.10, 0.12, 0.15, 0.18, 0.24,
 				0.30, 0.36, 0.43, 0.50, 0.60, 0.72, 0.85, 1.00, 1.00 };
-		
+
 		// get the corresponding index for the scaleInput array.
 		int index = (int) (dVal * 16.0);
-		
+
 		// index should be positive.
 		if (index < 0) {
 			index = -index;
