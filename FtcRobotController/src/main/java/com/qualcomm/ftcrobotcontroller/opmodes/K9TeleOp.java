@@ -57,6 +57,10 @@ public class K9TeleOp extends OpMode {
 	DcMotor rackMid;
 	DcMotor rackTop;
 
+	Servo swipeLeft;
+	Servo swipeRight;
+	Servo flipClimbers;
+
 	boolean rbpressed = false;
 	boolean lbpressed = false;
 	boolean trcheck = false;
@@ -85,60 +89,37 @@ public class K9TeleOp extends OpMode {
 		rackMid.setDirection(DcMotor.Direction.REVERSE);
 		rackTop = hardwareMap.dcMotor.get("rackTop");
 
+		swipeLeft = hardwareMap.servo.get("swipeLeft");
+		swipeRight = hardwareMap.servo.get("swipeRight");
+
+		flipClimbers = hardwareMap.servo.get("flipClimbers");
 	}
 
 	@Override
 	public void loop() {
 
-		left_joystick_movement();
+		//GAMEPAD 1
 
-		//Tilt control, left and right bumpers for gamepad 2
-		float trPower = .5f;
+		//Robot movement
+		left_boost_movement();
 
-		if(gamepad2.right_bumper) {
-			if(!rbpressed) {
-				if (trcheck) {
-					tiltArm.setPower(0);
-					trcheck = false;
-				} else {
-					tiltArm.setPower(.5f);
-					trcheck = true;
-				}
-				rbpressed = false;
-			}
-			rbpressed = true;
-			lbpressed = false;
-		} else if(gamepad2.left_bumper) {
-			if(!lbpressed) {
-				if (trcheck) {
-					tiltArm.setPower(0);
-					trcheck = false;
-				} else {
-					tiltArm.setPower(-.2f);
-					trcheck = true;
-				}
-				lbpressed = false;
-			}
-			rbpressed = false;
-			lbpressed = true;
-		} else {
-			rbpressed = false;
-			lbpressed = false;
-		}
+		//GAMEPAD 2
 
+		//Tilt arm control, left stick on gamepad 2
+		float tpower = gamepad2.left_stick_y;
+		tpower = (float) scaleInput(tpower);
+		tiltArm.setPower(-tpower);
 
-
-		//Rack control, right and left bumpers on gamepad 2
-		float rPower = .3f;
+		//Rack control: right and left bumpers
 		float boffset = .2f;
 
-
 		if(gamepad2.right_trigger > 0) {
-			setRackPower(gamepad2.right_trigger); //Forwards direction
-			float bpow = gamepad2.right_trigger + boffset;
+			float rpow = (float) scaleInput(gamepad2.right_trigger);
+			setRackPower(rpow); //Forwards direction
+			float bpow = rpow + boffset;
 			rackBottom.setPower(bpow > 1.0f ? 1.0f : bpow);
 		} else if(gamepad2.left_trigger > 0) {
-			setRackPower(-gamepad2.left_trigger); //Reverse direction
+			setRackPower(-1 * (float) scaleInput(gamepad2.left_trigger)); //Reverse direction
 		} else {
 			setRackPower(0f);
 		}
@@ -169,8 +150,39 @@ public class K9TeleOp extends OpMode {
 		right = (float)scaleInput(right);
 		left =  (float)scaleInput(left);
 
+		motorRight.setPower(left);
+		motorLeft.setPower(right);
+	}
+
+	private void left_boost_movement() {
+		float right = gamepad1.left_stick_y - gamepad1.left_stick_x;
+		float left = gamepad1.left_stick_y +  gamepad1.left_stick_x;
+
+
+		//Scale inputs
+		right = (float)scaleInput(right) / 2f;
+		left =  (float)scaleInput(left) / 2f;
+
+		float boost = gamepad1.left_trigger;
+		boost = boost < .2f ? .2f : boost; //min value of boost is .2
+		boost = (float) scaleInput(boost) * 2f;
+
+		//add boost amount to vectors right and left
+		right *= boost;
+		left *= boost;
+
+		right = Range.clip(right, -1, 1);
+		left = Range.clip(left, -1, 1);
+
 		motorRight.setPower(right);
 		motorLeft.setPower(left);
+	}
+
+	private float add_magnitude(float f, float a) {
+		if(f >= 0)
+			return f + a;
+		else
+			return f - a;
 	}
 
 	//Dual joystick movement
