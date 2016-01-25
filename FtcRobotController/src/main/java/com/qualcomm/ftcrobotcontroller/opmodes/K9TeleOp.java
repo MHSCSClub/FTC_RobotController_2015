@@ -61,16 +61,14 @@ public class K9TeleOp extends OpMode {
 	Servo swipeRight;
 	Servo flipClimbers;
 
-	boolean rbpressed = false;
-	boolean lbpressed = false;
-	boolean trcheck = false;
+	boolean xpressed = false;
+	boolean slenabled = false;
 
-	boolean rtpressed = false;
-	boolean ltpressed = false;
-	boolean renabled = false;
+	boolean bpressed = false;
+	boolean srenabled = false;
 
-	//servo
-	double hammerPosition = 0;
+	boolean apressed = false;
+	boolean fcenabled = false;
 
 	public K9TeleOp() {
 
@@ -102,6 +100,54 @@ public class K9TeleOp extends OpMode {
 
 		//Robot movement
 		left_boost_movement();
+
+		//X-> swipeLeft
+		if(gamepad1.x) {
+			if(!xpressed) {
+				if(slenabled) {
+					swipeLeft.setPosition(0f);
+					slenabled = false;
+				} else {
+					swipeLeft.setPosition(1f);
+					slenabled = true;
+				}
+			}
+			xpressed = true;
+		} else {
+			xpressed = false;
+		}
+
+		//B-> swipeRight
+		if(gamepad1.b) {
+			if(!bpressed) {
+				if(slenabled) {
+					swipeRight.setPosition(0f);
+					srenabled = false;
+				} else {
+					swipeRight.setPosition(1f);
+					srenabled = true;
+				}
+			}
+			bpressed = true;
+		} else {
+			bpressed = false;
+		}
+
+		//A-> flipClimbers
+		if(gamepad1.a) {
+			if(!apressed) {
+				if(fcenabled) {
+					flipClimbers.setPosition(0f);
+					fcenabled = false;
+				} else {
+					flipClimbers.setPosition(1f);
+					fcenabled = true;
+				}
+			}
+			apressed = true;
+		} else {
+			apressed = false;
+		}
 
 		//GAMEPAD 2
 
