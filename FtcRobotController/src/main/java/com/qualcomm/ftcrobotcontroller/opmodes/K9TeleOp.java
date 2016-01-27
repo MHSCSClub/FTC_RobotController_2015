@@ -52,10 +52,12 @@ public class K9TeleOp extends OpMode {
 	DcMotor motorRight;
 	DcMotor motorLeft;
 
+
 	DcMotor tiltArm;
 	DcMotor rackBottom;
 	DcMotor rackMid;
 	DcMotor rackTop;
+	DcMotor pully;
 
 	Servo swipeLeft;
 	Servo swipeRight;
@@ -86,11 +88,15 @@ public class K9TeleOp extends OpMode {
 		rackMid = hardwareMap.dcMotor.get("rackMid");
 		rackMid.setDirection(DcMotor.Direction.REVERSE);
 		rackTop = hardwareMap.dcMotor.get("rackTop");
+		pully = hardwareMap.dcMotor.get("pully");
 
 		swipeLeft = hardwareMap.servo.get("swipeLeft");
+		swipeLeft.setPosition(.5f);
 		swipeRight = hardwareMap.servo.get("swipeRight");
+		swipeRight.setPosition(.5f);
 
 		flipClimbers = hardwareMap.servo.get("flipClimbers");
+		flipClimbers.setPosition(0f);
 	}
 
 	@Override
@@ -101,11 +107,12 @@ public class K9TeleOp extends OpMode {
 		//Robot movement
 		left_boost_movement();
 
+
 		//X-> swipeLeft
 		if(gamepad1.x) {
 			if(!xpressed) {
 				if(slenabled) {
-					swipeLeft.setPosition(0f);
+					swipeLeft.setPosition(.5f);
 					slenabled = false;
 				} else {
 					swipeLeft.setPosition(1f);
@@ -120,11 +127,11 @@ public class K9TeleOp extends OpMode {
 		//B-> swipeRight
 		if(gamepad1.b) {
 			if(!bpressed) {
-				if(slenabled) {
-					swipeRight.setPosition(0f);
+				if(srenabled) {
+					swipeRight.setPosition(.5f);
 					srenabled = false;
 				} else {
-					swipeRight.setPosition(1f);
+					swipeRight.setPosition(0f);
 					srenabled = true;
 				}
 			}
@@ -159,16 +166,31 @@ public class K9TeleOp extends OpMode {
 		//Rack control: right and left bumpers
 		float boffset = .2f;
 
+		//Right trigger extends
 		if(gamepad2.right_trigger > 0) {
 			float rpow = (float) scaleInput(gamepad2.right_trigger);
 			setRackPower(rpow); //Forwards direction
 			float bpow = rpow + boffset;
 			rackBottom.setPower(bpow > 1.0f ? 1.0f : bpow);
+
+			//Unwind pully
+			pully.setPower(rpow);
+
+		//Left trigger contracts, b is the trigger button for max pull
 		} else if(gamepad2.left_trigger > 0) {
 			setRackPower(-1 * (float) scaleInput(gamepad2.left_trigger)); //Reverse direction
+
+			if(gamepad2.b) {
+				pully.setPower(1);
+			}
 		} else {
 			setRackPower(0f);
 		}
+
+		//Independent pully control, right stick on motor 2
+		float ppower = gamepad2.right_stick_y;
+		ppower = (float) scaleInput(ppower);
+		tiltArm.setPower(ppower);
 
 		//Debug data
         telemetry.addData("Text", "*** Robot Data***");
