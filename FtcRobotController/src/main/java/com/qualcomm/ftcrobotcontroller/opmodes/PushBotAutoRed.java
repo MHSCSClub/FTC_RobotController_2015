@@ -82,21 +82,11 @@ public class PushBotAutoRed extends PushBotTelemetry
 
             break;
 
-        //Drive to the middle
+        //Drive to the end zone
         case 1:
             run_using_encoders();
             set_drive_power (.5f, .5f);
-            boolean lcheck = false, rcheck = false;
-            if(has_left_drive_encoder_reached(13000)) {
-                set_left_drive_power(0.0f);
-                lcheck = true;
-            }
-            if(has_right_drive_encoder_reached(13000)) {
-                set_right_drive_power(0.0f);
-                rcheck = true;
-            }
-
-            if (lcheck && rcheck) {
+            if(have_drive_encoders_reached(20000, 20000)) {
                 set_drive_power(0.0f, 0.0f);
                 reset_drive_encoders();
                 ++v_state;
@@ -108,81 +98,6 @@ public class PushBotAutoRed extends PushBotTelemetry
              ++v_state;
              break;
 
-        //Turn
-        case 3:
-            run_using_encoders();
-            set_drive_power (.5f, -0.5f);
-            if(has_left_drive_encoder_reached(2100)) {
-                set_drive_power(0.0f, 0.0f);
-                reset_drive_encoders();
-                ++v_state;
-            }
-            break;
-
-        case 4:
-            reset_drive_encoders();
-            ++v_state;
-            break;
-
-        // Drive forward and press the button
-        case 5:
-            run_without_drive_encoders();
-
-            set_drive_power (.5f, .5f);
-
-            if (touch_button_pressed())
-            {
-                reset_drive_encoders ();
-                set_drive_power(0.0f, 0.0f);
-                is_red = color_is_red();
-                v_state = -1;
-            }
-            break;
-
-        // Reverse
-        case 6:
-            run_without_drive_encoders();
-            set_drive_power(-.5f, -.5f);
-            ++reverseSteps;
-            if (reverseSteps == maxReverse)
-            {
-                set_drive_power(0.0f, 0.0f);
-                ++v_state;
-            }
-            break;
-
-        // Move pressers into position
-        case 7:
-            if(is_red) {
-                engage_left();
-            } else {
-                engage_right();
-            }
-            ++v_state;
-            forwardSteps = 0;
-            break;
-
-        // Go forwards
-        case 8:
-            forwardSteps++;
-            run_without_drive_encoders();
-            set_drive_power(.5f, .5f);
-            if(forwardSteps == 30000) {
-                set_drive_power(0.0f, 0.0f);
-                v_state = -1;
-                forwardSteps = 0;
-            }
-            break;
-
-        case 9:
-            run_without_drive_encoders();
-            set_drive_power(-.5f, -.5f);
-            ++forwardSteps;
-            if(forwardSteps == maxReverse) {
-                set_drive_power(0.0f, 0.0f);
-                reset_drive_encoders();
-            }
-            break;
 
         default:
             break;

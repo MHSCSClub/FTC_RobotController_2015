@@ -52,12 +52,10 @@ public class K9TeleOp extends OpMode {
 	DcMotor motorRight;
 	DcMotor motorLeft;
 
-
 	DcMotor tiltArm;
 	DcMotor rackBottom;
 	DcMotor rackMid;
 	DcMotor rackTop;
-	DcMotor pully;
 
 	Servo swipeLeft;
 	Servo swipeRight;
@@ -88,7 +86,6 @@ public class K9TeleOp extends OpMode {
 		rackMid = hardwareMap.dcMotor.get("rackMid");
 		rackMid.setDirection(DcMotor.Direction.REVERSE);
 		rackTop = hardwareMap.dcMotor.get("rackTop");
-		pully = hardwareMap.dcMotor.get("pully");
 
 		swipeLeft = hardwareMap.servo.get("swipeLeft");
 		swipeLeft.setPosition(.5f);
@@ -173,24 +170,12 @@ public class K9TeleOp extends OpMode {
 			float bpow = rpow + boffset;
 			rackBottom.setPower(bpow > 1.0f ? 1.0f : bpow);
 
-			//Unwind pully
-			pully.setPower(rpow);
-
 		//Left trigger contracts, b is the trigger button for max pull
 		} else if(gamepad2.left_trigger > 0) {
 			setRackPower(-1 * (float) scaleInput(gamepad2.left_trigger)); //Reverse direction
-
-			if(gamepad2.b) {
-				pully.setPower(1);
-			}
 		} else {
 			setRackPower(0f);
 		}
-
-		//Independent pully control, right stick on motor 2
-		float ppower = gamepad2.right_stick_y;
-		ppower = (float) scaleInput(ppower);
-		tiltArm.setPower(ppower);
 
 		//Debug data
         telemetry.addData("Text", "*** Robot Data***");
